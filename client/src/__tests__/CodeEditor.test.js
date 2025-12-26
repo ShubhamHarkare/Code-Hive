@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import CodeEditor from '../components/CodeEditor';
+import Codespace from '../components/Codespace';
 
-describe('CodeEditor Component', () => {
+describe('CodeSpace Component', () => {
   test('renders code editor', () => {
     render(<CodeEditor roomId="test-room" />);
     const editorElement = screen.getByTestId('code-editor');

@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: 'jsdom',
 
   // Setup files
-  setupFilesAfterEnv: ['client/src/setupTests.js'],
+  setupFilesAfterEnv: ['/Users/shubhamharkare/Desktop/IITM/RealTime Collabration/client/src/setupTests.js'],
 
   // Module paths
   moduleNameMapper: {

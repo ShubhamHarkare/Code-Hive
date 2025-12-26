@@ -15,9 +15,9 @@ function Editor() {
   const { roomId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  //Description: Function to handle socket errors
-  const handleError = () => {
-
+  //Description: Function definiation for handling errors
+  const handleError = e => {
+    console.log(`Socket error => ${e}`);
     toast.error('Socket Connection Failed');
     navigate('/');
   };
@@ -30,7 +30,6 @@ function Editor() {
         if (username !== location.state?.username) {
           toast.success(`${username} has joined`);
         }
-
         setClients(clients);
       });
       socketRef.current.emit('join', {
@@ -40,19 +39,18 @@ function Editor() {
 
       //Description: Write code for disconnecting users
       socketRef.current.on('disconnected', ({ socketId, username }) => {
-
+        console.log('DISCONNECTED EVENT RECEIVED:', socketId, username);
         toast.success(`${username} has left`);
         setClients(prev => {
-
+          console.log('Previous clients:', prev);
           const newClients = prev.filter(
             client => client.socketId !== socketId
           );
-
+          console.log('New clients after filter:', newClients);
           return newClients;
         });
       });
     };
-
     init();
     return () => {
       socketRef.current.disconnect();
@@ -60,11 +58,9 @@ function Editor() {
       socketRef.current.off('disconnect');
     };
   }, []);
-
   if (!location.state) {
     return <Navigate to="/" />;
   }
-
   //Description: Handling the event when the Copy Room button is clicked
   const handleCopyRoom = async e => {
     e.preventDefault();
@@ -82,7 +78,6 @@ function Editor() {
       navigate('/');
     }
   };
-
   return (
     <div className="container-fluid vh-100">
       <div className="row h-100">
@@ -90,7 +85,6 @@ function Editor() {
           className="col-md-2 bg-dark text-light d-flex flex-column h-100"
           style={{ boxShadow: '2px 0 4px rgba(0,0,0,0.1)' }}
         >
-          {/* TODO: Enter Client list container */}
           <p className="text-light">Members</p>
           <div className="d-flex flex-column overflow-auto">
             {/* CLIENT */}
