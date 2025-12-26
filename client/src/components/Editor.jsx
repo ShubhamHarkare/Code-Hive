@@ -16,8 +16,7 @@ function Editor() {
   const location = useLocation();
   const navigate = useNavigate();
   //Description: Function definiation for handling errors
-  const handleError = e => {
-    console.log(`Socket error => ${e}`);
+  const handleError = () => {
     toast.error('Socket Connection Failed');
     navigate('/');
   };
@@ -39,14 +38,11 @@ function Editor() {
 
       //Description: Write code for disconnecting users
       socketRef.current.on('disconnected', ({ socketId, username }) => {
-        console.log('DISCONNECTED EVENT RECEIVED:', socketId, username);
         toast.success(`${username} has left`);
         setClients(prev => {
-          console.log('Previous clients:', prev);
           const newClients = prev.filter(
             client => client.socketId !== socketId
           );
-          console.log('New clients after filter:', newClients);
           return newClients;
         });
       });
