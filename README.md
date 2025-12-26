@@ -23,6 +23,10 @@
 - 📱 **Responsive Design** - Works seamlessly on desktop and mobile
 
 ---
+## System Architecture
+[![](https://mermaid.ink/img/pako:eNqVjc1OwzAQhF_F2lOR0shJHDu1EFIbLkgIJHpAAvdgkm1S2sSV6_DX9t1xG0F7hL3szI7m2y0UpkSQMF-Z96LW1pHbB9USP_lqga0bPyvoFRkrmJHL4fBqp-ARX6amWKIjg36HN_cXCnZkivYNrS_1ggzuPD983fhwds6dnLiTv3PPCfmJkP-HAAFUdlGCdLbDABq0jT5Y2B7oClyNDSqQXpbaLhWodu87a90-GdP81KzpqhrkXK823nXrUju8XujK6ub3arEt0eamax3ImCZHCMgtfHibjUIRc54KThOaRjyAT5BREoU-oYKNeJLGLMv2AXwd39KQM8ZEktJICMoywfffSDmJqQ?type=png)](https://mermaid.live/edit#pako:eNqVjc1OwzAQhF_F2lOR0shJHDu1EFIbLkgIJHpAAvdgkm1S2sSV6_DX9t1xG0F7hL3szI7m2y0UpkSQMF-Z96LW1pHbB9USP_lqga0bPyvoFRkrmJHL4fBqp-ARX6amWKIjg36HN_cXCnZkivYNrS_1ggzuPD983fhwds6dnLiTv3PPCfmJkP-HAAFUdlGCdLbDABq0jT5Y2B7oClyNDSqQXpbaLhWodu87a90-GdP81KzpqhrkXK823nXrUju8XujK6ub3arEt0eamax3ImCZHCMgtfHibjUIRc54KThOaRjyAT5BREoU-oYKNeJLGLMv2AXwd39KQM8ZEktJICMoywfffSDmJqQ)
+
+---
 
 ## 🛠️ Tech Stack
 
@@ -58,17 +62,6 @@ The application is live and accessible at:
 - Backend deploys to Render via deploy hooks
 - Zero-downtime deployments
 
----
-
-## 📸 Screenshots
-
-![Code-Hive Home](screenshots/collaboration.png)
-*Real-time collaborative coding interface*
-
-![Room Creation](screenshots/room_creation.gif)
-*Easy room creation and joining*
-
-> **Note:** Add your actual screenshots to the `screenshots/` folder
 
 ---
 
