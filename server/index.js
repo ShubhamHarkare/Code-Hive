@@ -29,26 +29,25 @@ io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
   
   socket.on("join", ({ roomId, username }) => {
-    userSocketMap[socket.id] = username;
-    socketRoomMap[socket.id] = roomId; // STORE THE ROOM
-    socket.join(roomId);
+  userSocketMap[socket.id] = username;
+  socketRoomMap[socket.id] = roomId;
+  socket.join(roomId);
 
-    if(!roomCodeMap[roomId]){
-      roomCodeMap[roomId] = "# Write your Python code here";
-    }
+  if(!roomCodeMap[roomId]){
+    roomCodeMap[roomId] = "# Write your Python code here";
+  }
 
+  const clients = getAllConnectedClients(roomId);
+  console.log('Clients in room:', clients); // CHECK YOUR SERVER CONSOLE
+  
+  // This emits to the entire room
+  io.to(roomId).emit("joined", {
+    clients,
+    username,
+    socketId: socket.id
+  });
 
-    
-    const clients = getAllConnectedClients(roomId);
-    console.log('Clients in room:', clients);
-    
-    io.to(roomId).emit("joined", {
-      clients,
-      username,
-      socketId: socket.id
-    });
-
-    socket.emit('init-code',roomCodeMap[roomId])
+  socket.emit('init-code', roomCodeMap[roomId]);
   });
 
   socket.on('disconnect', () => {
