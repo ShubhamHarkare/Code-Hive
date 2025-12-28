@@ -28,19 +28,13 @@ function Editor() {
   useEffect(() => {
     const init = async () => {
       try {
-        console.log('🔌 Initializing socket...');
         socketRef.current = await initSocket(); // This now waits for connection!
-
-        console.log('✅ Socket connected!', socketRef.current.id);
-
         socketRef.current.on('connect_error', err => {
-          console.error('❌ Connection error:', err);
           handleError(err);
         });
-
         socketRef.current.on('joined', ({ clients, username }) => {
-          console.log('🎉 JOINED EVENT RECEIVED!');
-          console.log('Clients:', clients);
+
+
 
           if (username !== location.state?.username) {
             toast.success(`${username} has joined`);
@@ -56,16 +50,16 @@ function Editor() {
           });
         });
 
-        // Now emit join - socket is already connected!
-        console.log('📤 Emitting join...');
+
+
         socketRef.current.emit('join', {
           roomId,
           username: location.state?.username
         });
-        console.log('✅ Join emitted!');
+
 
       } catch (error) {
-        console.error('❌ Socket initialization failed:', error);
+
         handleError();
       }
     };

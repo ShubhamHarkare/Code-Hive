@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
 import { cpp } from '@codemirror/lang-cpp';
@@ -6,6 +6,8 @@ import { javascript } from '@codemirror/lang-javascript';
 
 function Codespace({ language, socketRef, roomId }) {
   const isRemoteUpdate = useRef(false);
+
+  // -------- Language Placeholder --------
   const getPlaceholder = () => {
     switch (language) {
     case 'python':
@@ -18,8 +20,11 @@ function Codespace({ language, socketRef, roomId }) {
       return '# Write your code here';
     }
   };
+
   const [code, setCode] = useState(getPlaceholder());
-  const getLanguageExtension = () => {
+
+  // -------- Language Extensions (Memoized) --------
+  const extensions = useMemo(() => {
     switch (language) {
     case 'python':
       return [python()];
@@ -30,21 +35,30 @@ function Codespace({ language, socketRef, roomId }) {
     default:
       return [python()];
     }
-  };
+  }, [language]);
 
+  // -------- Update Placeholder on Language Change (Without Wiping Code) --------
   useEffect(() => {
-    if (!socketRef.current) {
+    if (!code || code === getPlaceholder()) {
+      setCode(getPlaceholder());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]);
+
+  // -------- Socket Listeners --------
+  useEffect(() => {
+    if (!socketRef?.current) {
       return;
-    };
+    }
 
     socketRef.current.on('init-code', initialCode => {
       isRemoteUpdate.current = true;
       setCode(initialCode);
     });
 
-    socketRef.current.on('code-change', code => {
+    socketRef.current.on('code-change', incomingCode => {
       isRemoteUpdate.current = true;
-      setCode(code);
+      setCode(incomingCode);
     });
 
     return () => {
@@ -55,6 +69,7 @@ function Codespace({ language, socketRef, roomId }) {
     };
   }, [socketRef, roomId]);
 
+  // -------- Local Code Change --------
   const handleChange = value => {
     if (isRemoteUpdate.current) {
       isRemoteUpdate.current = false;
@@ -62,7 +77,8 @@ function Codespace({ language, socketRef, roomId }) {
     }
 
     setCode(value);
-    if (socketRef.current) {
+
+    if (socketRef?.current) {
       socketRef.current.emit('code-change', {
         roomId,
         code: value
@@ -75,13 +91,13 @@ function Codespace({ language, socketRef, roomId }) {
       <CodeMirror
         value={code}
         height="100vh"
-        extensions={getLanguageExtension()}
+        extensions={extensions}
         onChange={handleChange}
         theme="dark"
-        autoCorrect="true"
       />
     </div>
   );
 }
+
 
 export default Codespace;

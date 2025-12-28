@@ -24,7 +24,7 @@ const getAllConnectedClients = (roomId) => {
     };
   });
 };
-
+//Description: SocketIO for connection
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
   
@@ -91,6 +91,8 @@ io.on('connection', (socket) => {
     socket.leave(roomId)
     delete socketRoomMap[socket.id];
     delete userSocketMap[socket.id];
+
+  
 
   console.log(`User ${username} left room: ${roomId}`);
   });
