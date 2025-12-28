@@ -13,12 +13,12 @@ import {
 function Editor() {
   const [clients, setClients] = useState([]);
   const [programmingLanguage, setProgrammingLanguage] = useState('python');
+  const [socketConnected, setSocketConnected] = useState(false);
   const socketRef = useRef(null);
   const { roomId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-
-  //Description: Function definiation for handling errors
+  //Description: Function definition for handling errors
   const handleError = () => {
     toast.error('Socket Connection Failed');
     navigate('/');
@@ -28,18 +28,16 @@ function Editor() {
   useEffect(() => {
     const init = async () => {
       try {
-        socketRef.current = await initSocket(); // This now waits for connection!
+        socketRef.current = await initSocket();
+        setSocketConnected(true);
+
         socketRef.current.on('connect_error', err => {
           handleError(err);
         });
         socketRef.current.on('joined', ({ clients, username }) => {
-
-
-
           if (username !== location.state?.username) {
             toast.success(`${username} has joined`);
           }
-
           setClients(clients);
         });
 
@@ -50,25 +48,21 @@ function Editor() {
           });
         });
 
-        socketRef.current.on('init-language',(language) => {
+        socketRef.current.on('init-language', (language) => {
           setProgrammingLanguage(language);
         });
 
-        socketRef.current.on('language-change',(language) => {
+        socketRef.current.on('language-change', (language) => {
           setProgrammingLanguage(language);
         });
-
-
 
         socketRef.current.emit('join', {
           roomId,
           username: location.state?.username
         });
 
-
       } catch (error) {
-
-        handleError();
+        handleError(error);
       }
     };
 
@@ -78,11 +72,12 @@ function Editor() {
       if (socketRef.current) {
         socketRef.current.off('joined');
         socketRef.current.off('disconnected');
+        socketRef.current.off('init-language');
+        socketRef.current.off('language-change');
         socketRef.current.disconnect();
       }
     };
   }, [roomId, location.state?.username, navigate]);
-
 
   if (!location.state) {
     return <Navigate to="/" />;
@@ -109,7 +104,6 @@ function Editor() {
 
   //Description: Code to handle the change in programming language
   const changeProgrammingLanguage = lang => {
-    // setProgrammingLanguage(lang);
     if (socketRef.current) {
       socketRef.current.emit('language-change', {
         roomId,
@@ -158,7 +152,9 @@ function Editor() {
               </li>
             </ul>
           </div>
-          <span className="navbar-brand fw-semibold">Code Hive</span>
+          <span className="navbar-brand fw-semibold">
+            Code Hive {!socketConnected && '(Connecting...)'}
+          </span>
           <button
             className="btn btn-warning btn-sm px-4 fw-semibold"
             type="button"
@@ -172,7 +168,7 @@ function Editor() {
           className="col-md-2 bg-dark text-light d-flex flex-column h-100"
           style={{ boxShadow: '2px 0 4px rgba(0,0,0,0.1)' }}
         >
-          <p className="text-light">Members</p>
+          <p className="text-light">Members ({clients.length})</p>
           <div className="d-flex flex-column overflow-auto">
             {/* CLIENT */}
             {clients.map(client => (
@@ -196,11 +192,17 @@ function Editor() {
           </div>
         </div>
         <div className="col-md-10 text-light d-flex flex-column h-100">
-          <Codespace
-            language={programmingLanguage}
-            socketRef={socketRef}
-            roomId={roomId}
-          />
+          {socketConnected ? (
+            <Codespace
+              language={programmingLanguage}
+              socketRef={socketRef}
+              roomId={roomId}
+            />
+          ) : (
+            <div style={{ padding: '20px' }}>
+              <p>Connecting to room...</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

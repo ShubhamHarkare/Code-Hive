@@ -13,9 +13,10 @@ const io = new Server(server, {
 });
 
 const userSocketMap = {};
-const socketRoomMap = {}; // ADD THIS - track which room each socket is in
-const roomCodeMap = {} ; //Description: Map to store roomId -> Code
-const roomLanguageMap = {} //DESC: Map to store roomid and language
+const socketRoomMap = {}; // Track which room each socket is in
+const roomCodeMap = {}; // Map to store roomId -> Code
+const roomLanguageMap = {}; // Map to store roomId -> language
+
 const getAllConnectedClients = (roomId) => {
   return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
     return {
@@ -24,91 +25,116 @@ const getAllConnectedClients = (roomId) => {
     };
   });
 };
-//Description: SocketIO for connection
+
+// Description: SocketIO for connection
 io.on('connection', (socket) => {
-  console.log(`User connected: ${socket.id}`);
+  console.log(`✅ User connected: ${socket.id}`);
   
   socket.on("join", ({ roomId, username }) => {
-  userSocketMap[socket.id] = username;
-  socketRoomMap[socket.id] = roomId;
-  socket.join(roomId);
+    userSocketMap[socket.id] = username;
+    socketRoomMap[socket.id] = roomId;
+    socket.join(roomId);
 
-  if(!roomCodeMap[roomId]){
-    roomCodeMap[roomId] = "# Write your Python code here";
-  }
-  if(!roomLanguageMap[roomId]){
-    roomLanguageMap[roomId] = "python";
-  }
+    // Initialize room data if it doesn't exist
+    if (!roomCodeMap[roomId]) {
+      roomCodeMap[roomId] = "# Write your Python code here";
+    }
+    if (!roomLanguageMap[roomId]) {
+      roomLanguageMap[roomId] = "python";
+    }
 
-  const clients = getAllConnectedClients(roomId);
-  console.log('Clients in room:', clients); // CHECK YOUR SERVER CONSOLE
-  
-  // This emits to the entire room
-  io.to(roomId).emit("joined", {
-    clients,
-    username,
-    socketId: socket.id
-  });
+    const clients = getAllConnectedClients(roomId);
+    console.log(`👥 Clients in room ${roomId}:`, clients);
+    
+    // Emit to the entire room
+    io.to(roomId).emit("joined", {
+      clients,
+      username,
+      socketId: socket.id
+    });
 
-  socket.emit('init-code', roomCodeMap[roomId]);
-  socket.emit('init-language',roomLanguageMap[roomId]);
+    // Send current room state to the joining user
+    socket.emit('init-code', roomCodeMap[roomId]);
+    socket.emit('init-language', roomLanguageMap[roomId]);
+    
+    console.log(`📤 Sent init-code to ${username}: "${roomCodeMap[roomId].substring(0, 50)}..."`);
   });
 
   socket.on('disconnect', () => {
-    console.log(`User disconnected: ${socket.id}`);
+    console.log(`❌ User disconnected: ${socket.id}`);
     
-    const roomId = socketRoomMap[socket.id]; // GET THE ROOM
+    const roomId = socketRoomMap[socket.id];
     const username = userSocketMap[socket.id];
     
-    console.log(`User ${username} left room: ${roomId}`);
-    
     if (roomId) {
+      console.log(`👋 User ${username} left room: ${roomId}`);
+      
       // Notify others in the room
       socket.to(roomId).emit("disconnected", {
         socketId: socket.id,
         username: username
       });
+
+      // Check if room is empty, if so clean up room data
+      const remainingClients = getAllConnectedClients(roomId);
+      if (remainingClients.length === 0) {
+        console.log(`🧹 Cleaning up empty room: ${roomId}`);
+        delete roomCodeMap[roomId];
+        delete roomLanguageMap[roomId];
+      }
       
-      delete socketRoomMap[socket.id]; // CLEAN UP
+      delete socketRoomMap[socket.id];
     }
     
     delete userSocketMap[socket.id];
   });
 
-  //Description: Connection for code change
+  // Description: Connection for code change
   socket.on("code-change", ({ roomId, code }) => {
-  roomCodeMap[roomId] = code;
-  socket.to(roomId).emit("code-change", code);
+    console.log(`📝 Code change in room ${roomId}`);
+    roomCodeMap[roomId] = code; // Persist the code
+    socket.to(roomId).emit("code-change", code); // Broadcast to others
   });
 
-  //Description: Connection for language change
-  socket.on('language-change',({ roomId, language}) => {
+  // Description: Connection for language change
+  socket.on('language-change', ({ roomId, language }) => {
+    console.log(`🔤 Language change in room ${roomId}: ${language}`);
     roomLanguageMap[roomId] = language;
-    socket.to(roomId).emit('language-change',language);
-  })
+    // Send language change to all users in the room including sender
+    io.to(roomId).emit('language-change', language);
+    // Note: Code persists in roomCodeMap[roomId], no need to reset it
+  });
 
-  //Description: Code for leaving the room
-  socket.on("leave-room",() => {
-    const roomId = socketRoomMap[socket.id]
-    const username = userSocketMap[socket.id]
+  // Description: Code for leaving the room
+  socket.on("leave-room", () => {
+    const roomId = socketRoomMap[socket.id];
+    const username = userSocketMap[socket.id];
 
     if (!roomId) return;
 
-    socket.to(roomId).emit('user-left',{
-      socketId:socket.id,
+    console.log(`👋 User ${username} manually left room: ${roomId}`);
+
+    socket.to(roomId).emit('disconnected', {
+      socketId: socket.id,
       username
-    })
-    socket.leave(roomId)
+    });
+    
+    socket.leave(roomId);
+    
+    // Check if room is empty after this user leaves
+    const remainingClients = getAllConnectedClients(roomId);
+    if (remainingClients.length === 0) {
+      console.log(`🧹 Cleaning up empty room: ${roomId}`);
+      delete roomCodeMap[roomId];
+      delete roomLanguageMap[roomId];
+    }
+    
     delete socketRoomMap[socket.id];
     delete userSocketMap[socket.id];
-
-  
-
-  console.log(`User ${username} left room: ${roomId}`);
   });
+});
 
-})
 const PORT = process.env.PORT || 5555;
 server.listen(PORT, () => {
-  console.log(`Server is running on ${PORT}`);
+  console.log(`🚀 Server is running on port ${PORT}`);
 });
