@@ -15,7 +15,7 @@ const io = new Server(server, {
 const userSocketMap = {};
 const socketRoomMap = {}; // ADD THIS - track which room each socket is in
 const roomCodeMap = {} ; //Description: Map to store roomId -> Code
-
+const roomLanguageMap = {} //DESC: Map to store roomid and language
 const getAllConnectedClients = (roomId) => {
   return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
     return {
@@ -36,6 +36,9 @@ io.on('connection', (socket) => {
   if(!roomCodeMap[roomId]){
     roomCodeMap[roomId] = "# Write your Python code here";
   }
+  if(!roomLanguageMap[roomId]){
+    roomLanguageMap[roomId] = "python";
+  }
 
   const clients = getAllConnectedClients(roomId);
   console.log('Clients in room:', clients); // CHECK YOUR SERVER CONSOLE
@@ -48,6 +51,7 @@ io.on('connection', (socket) => {
   });
 
   socket.emit('init-code', roomCodeMap[roomId]);
+  socket.emit('init-language',roomLanguageMap[roomId]);
   });
 
   socket.on('disconnect', () => {
@@ -76,6 +80,12 @@ io.on('connection', (socket) => {
   roomCodeMap[roomId] = code;
   socket.to(roomId).emit("code-change", code);
   });
+
+  //Description: Connection for language change
+  socket.on('language-change',({ roomId, language}) => {
+    roomLanguageMap[roomId] = language;
+    socket.to(roomId).emit('language-change',language);
+  })
 
   //Description: Code for leaving the room
   socket.on("leave-room",() => {

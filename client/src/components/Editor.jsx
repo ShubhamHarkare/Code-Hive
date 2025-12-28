@@ -50,6 +50,14 @@ function Editor() {
           });
         });
 
+        socketRef.current.on('init-language',(language) => {
+          setProgrammingLanguage(language);
+        });
+
+        socketRef.current.on('language-change',(language) => {
+          setProgrammingLanguage(language);
+        });
+
 
 
         socketRef.current.emit('join', {
@@ -101,7 +109,13 @@ function Editor() {
 
   //Description: Code to handle the change in programming language
   const changeProgrammingLanguage = lang => {
-    setProgrammingLanguage(lang);
+    // setProgrammingLanguage(lang);
+    if (socketRef.current) {
+      socketRef.current.emit('language-change', {
+        roomId,
+        language: lang
+      });
+    }
   };
 
   return (
