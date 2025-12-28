@@ -1,68 +1,99 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
-import initSocket from './Socket';
-import { useLocation, useParams } from 'react-router-dom';
+import { cpp } from '@codemirror/lang-cpp';
+import { javascript } from '@codemirror/lang-javascript';
 
-function Codespace() {
-  const [code, setCode] = useState('# Write your Python code here');
-  const editorRef = useRef(null);
+function Codespace({ language, socketRef, roomId }) {
   const isRemoteUpdate = useRef(false);
-  const { roomId } = useParams();
-  const location = useLocation();
+  const [code, setCode] = useState('');
+  const lastEmittedCode = useRef('');
+  const getPlaceholder = () => {
+    switch (language) {
+    case 'python':
+      return '# Write your Python code here';
+    case 'c++':
+      return '// Write your C++ code here';
+    case 'javascript':
+      return '// Write your JavaScript code here';
+    default:
+      return '# Write your code here';
+    }
+  };
 
+  // -------- Language Extensions (Memoized) --------
+  const extensions = useMemo(() => {
+    switch (language) {
+    case 'python':
+      return [python()];
+    case 'c++':
+      return [cpp()];
+    case 'javascript':
+      return [javascript()];
+    default:
+      return [python()];
+    }
+  }, [language]);
+
+  // -------- Socket Listeners --------
   useEffect(() => {
-    const init = async () => {
-      editorRef.current = await initSocket();
+    if (!socketRef?.current) {
+      return;
+    }
 
-      editorRef.current.emit('join', {
-        roomId,
-        username: location.state?.username
-      });
-
-      editorRef.current.on('init-code', initialCode => {
-        isRemoteUpdate.current = true;
-        setCode(initialCode);
-      });
-
-      editorRef.current.on('code-change', code => {
-        isRemoteUpdate.current = true;
-        setCode(code);
-      });
+    const handleInitCode = (initialCode) => {
+      isRemoteUpdate.current = true;
+      setCode(initialCode || '');
+      lastEmittedCode.current = initialCode || '';
     };
 
-    init();
+    const handleCodeChange = (incomingCode) => {
+      isRemoteUpdate.current = true;
+      setCode(incomingCode);
+      lastEmittedCode.current = incomingCode;
+    };
+
+    socketRef.current.on('init-code', handleInitCode);
+    socketRef.current.on('code-change', handleCodeChange);
+
     return () => {
-      if (editorRef.current) {
-        editorRef.current.off('init-code');
-        editorRef.current.off('code-change');
-        editorRef.current.disconnect();
+      if (socketRef.current) {
+        socketRef.current.off('init-code', handleInitCode);
+        socketRef.current.off('code-change', handleCodeChange);
       }
     };
-  }, []);
+  }, [socketRef, roomId]);
 
-  const handleChange = value => {
+  // -------- Local Code Change --------
+  const handleChange = (value) => {
+    // If this was triggered by a remote update, ignore it
     if (isRemoteUpdate.current) {
       isRemoteUpdate.current = false;
       return;
     }
-
     setCode(value);
-    editorRef.current.emit('code-change', {
-      roomId,
-      code: value
-    });
+    lastEmittedCode.current = value;
+
+    if (socketRef?.current) {
+      socketRef.current.emit('code-change', {
+        roomId,
+        code: value
+      });
+    };
   };
 
   return (
     <div style={{ padding: '20px', textAlign: 'left' }}>
+      <div style={{ marginBottom: '10px', color: '#888', fontSize: '12px' }}>
+        Debug: Room={roomId}, Language={language}, CodeLength={code.length}
+      </div>
       <CodeMirror
         value={code}
         height="100vh"
-        extensions={[python()]}
+        extensions={extensions}
         onChange={handleChange}
         theme="dark"
-        autoCorrect="true"
+        placeholder={getPlaceholder()}
       />
     </div>
   );

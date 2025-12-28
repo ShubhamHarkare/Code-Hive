@@ -9,54 +9,80 @@ import {
   useParams,
   Navigate
 } from 'react-router-dom';
+
 function Editor() {
   const [clients, setClients] = useState([]);
+  const [programmingLanguage, setProgrammingLanguage] = useState('python');
+  const [socketConnected, setSocketConnected] = useState(false);
   const socketRef = useRef(null);
   const { roomId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  //Description: Function definiation for handling errors
+  //Description: Function definition for handling errors
   const handleError = () => {
     toast.error('Socket Connection Failed');
     navigate('/');
   };
+
+  //!This is the most important part of the code.
   useEffect(() => {
     const init = async () => {
-      socketRef.current = await initSocket();
-      socketRef.current.on('connect_error', err => handleError(err));
-      socketRef.current.on('connect_failed', err => handleError(err));
-      socketRef.current.on('joined', ({ clients, username }) => {
-        if (username !== location.state?.username) {
-          toast.success(`${username} has joined`);
-        }
-        setClients(clients);
-      });
-      socketRef.current.emit('join', {
-        roomId,
-        username: location.state?.username
-      });
+      try {
+        socketRef.current = await initSocket();
+        setSocketConnected(true);
 
-      //Description: Write code for disconnecting users
-      socketRef.current.on('disconnected', ({ socketId, username }) => {
-        toast.success(`${username} has left`);
-        setClients(prev => {
-          const newClients = prev.filter(
-            client => client.socketId !== socketId
-          );
-          return newClients;
+        socketRef.current.on('connect_error', err => {
+          handleError(err);
         });
-      });
+        socketRef.current.on('joined', ({ clients, username }) => {
+          if (username !== location.state?.username) {
+            toast.success(`${username} has joined`);
+          }
+          setClients(clients);
+        });
+
+        socketRef.current.on('disconnected', ({ socketId, username }) => {
+          toast.success(`${username} has left`);
+          setClients(prev => {
+            return prev.filter(client => client.socketId !== socketId);
+          });
+        });
+
+        socketRef.current.on('init-language', (language) => {
+          setProgrammingLanguage(language);
+        });
+
+        socketRef.current.on('language-change', (language) => {
+          setProgrammingLanguage(language);
+        });
+
+        socketRef.current.emit('join', {
+          roomId,
+          username: location.state?.username
+        });
+
+      } catch (error) {
+        handleError(error);
+      }
     };
+
     init();
+
     return () => {
-      socketRef.current.disconnect();
-      socketRef.current.off('joined');
-      socketRef.current.off('disconnect');
+      if (socketRef.current) {
+        socketRef.current.off('joined');
+        socketRef.current.off('disconnected');
+        socketRef.current.off('init-language');
+        socketRef.current.off('language-change');
+        socketRef.current.disconnect();
+      }
     };
-  }, []);
+  }, [roomId, location.state?.username, navigate]);
+
   if (!location.state) {
     return <Navigate to="/" />;
   }
+
   //Description: Handling the event when the Copy Room button is clicked
   const handleCopyRoom = async e => {
     e.preventDefault();
@@ -67,6 +93,7 @@ function Editor() {
       toast.error('Cannot copy the RoomID');
     }
   };
+
   //Description: Code to remove user when they click on Leave Room
   const handleLeaveRoom = async () => {
     if (socketRef.current) {
@@ -74,14 +101,74 @@ function Editor() {
       navigate('/');
     }
   };
+
+  //Description: Code to handle the change in programming language
+  const changeProgrammingLanguage = lang => {
+    if (socketRef.current) {
+      socketRef.current.emit('language-change', {
+        roomId,
+        language: lang
+      });
+    }
+  };
+
   return (
     <div className="container-fluid vh-100">
+      <nav className="navbar navbar-dark bg-dark shadow-sm">
+        <div className="container-fluid d-flex justify-content-between align-items-center px-3">
+          <div className="dropdown">
+            <button
+              className="btn btn-secondary dropdown-toggle"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              {programmingLanguage}
+            </button>
+            <ul className="dropdown-menu">
+              <li>
+                <button
+                  onClick={() => changeProgrammingLanguage('python')}
+                  className="dropdown-item"
+                >
+                  Python3
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => changeProgrammingLanguage('c++')}
+                  className="dropdown-item"
+                >
+                  C++
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => changeProgrammingLanguage('javascript')}
+                  className="dropdown-item"
+                >
+                  JavaScript
+                </button>
+              </li>
+            </ul>
+          </div>
+          <span className="navbar-brand fw-semibold">
+            Code Hive {!socketConnected && '(Connecting...)'}
+          </span>
+          <button
+            className="btn btn-warning btn-sm px-4 fw-semibold"
+            type="button"
+          >
+            ▶ Run
+          </button>
+        </div>
+      </nav>
       <div className="row h-100">
         <div
           className="col-md-2 bg-dark text-light d-flex flex-column h-100"
           style={{ boxShadow: '2px 0 4px rgba(0,0,0,0.1)' }}
         >
-          <p className="text-light">Members</p>
+          <p className="text-light">Members ({clients.length})</p>
           <div className="d-flex flex-column overflow-auto">
             {/* CLIENT */}
             {clients.map(client => (
@@ -105,7 +192,17 @@ function Editor() {
           </div>
         </div>
         <div className="col-md-10 text-light d-flex flex-column h-100">
-          <Codespace />
+          {socketConnected ? (
+            <Codespace
+              language={programmingLanguage}
+              socketRef={socketRef}
+              roomId={roomId}
+            />
+          ) : (
+            <div style={{ padding: '20px' }}>
+              <p>Connecting to room...</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
