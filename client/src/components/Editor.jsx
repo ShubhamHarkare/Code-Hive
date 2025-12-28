@@ -12,6 +12,7 @@ import {
 
 function Editor() {
   const [clients, setClients] = useState([]);
+  const [theme,setTheme] = useState('dark');
   const [programmingLanguage, setProgrammingLanguage] = useState('python');
   const [socketConnected, setSocketConnected] = useState(false);
   const socketRef = useRef(null);
@@ -111,6 +112,15 @@ function Editor() {
       });
     }
   };
+  //Description: Code to change the handling of theme
+  const handleToggleTheme = () => {
+    if (theme === 'dark') {
+      setTheme('light');
+    } else {
+      setTheme('dark');
+
+    }
+  };
 
   return (
     <div className="container-fluid vh-100">
@@ -156,6 +166,13 @@ function Editor() {
             Code Hive {!socketConnected && '(Connecting...)'}
           </span>
           <button
+            onClick={handleToggleTheme}
+            type="button"
+            className="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 rounded-3">
+            <span className="fs-6">🌙</span>
+            <span className="fw-medium small">Change Theme</span>
+          </button>
+          <button
             className="btn btn-warning btn-sm px-4 fw-semibold"
             type="button"
           >
@@ -197,6 +214,7 @@ function Editor() {
               language={programmingLanguage}
               socketRef={socketRef}
               roomId={roomId}
+              theme = {theme}
             />
           ) : (
             <div style={{ padding: '20px' }}>
