@@ -4,7 +4,7 @@ import { python } from '@codemirror/lang-python';
 import { cpp } from '@codemirror/lang-cpp';
 import { javascript } from '@codemirror/lang-javascript';
 
-function Codespace({ language, socketRef, roomId }) {
+function Codespace({ language, socketRef, roomId, theme }) {
   const isRemoteUpdate = useRef(false);
   const [code, setCode] = useState('');
   const lastEmittedCode = useRef('');
@@ -92,7 +92,7 @@ function Codespace({ language, socketRef, roomId }) {
         height="100vh"
         extensions={extensions}
         onChange={handleChange}
-        theme="dark"
+        theme={theme}
         placeholder={getPlaceholder()}
       />
     </div>
