@@ -3,11 +3,12 @@ const app = express();
 const http = require("http");
 const { Server } = require('socket.io');
 const server = http.createServer(app);
-
+const CORS = require('cors');
 
 
 //Middleware required
 app.use(express.json())
+app.use(CORS())
 
 //Adding code execuiton here
 const codeExecution = require('./codeExecution.js');
