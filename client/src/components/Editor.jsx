@@ -62,10 +62,6 @@ function Editor() {
           username: location.state?.username
         });
 
-        socketRef.current.on('theme-change', ({ theme }) => {
-          setTheme(theme);
-        });
-
       } catch (error) {
         handleError(error);
       }
@@ -79,7 +75,6 @@ function Editor() {
         socketRef.current.off('disconnected');
         socketRef.current.off('init-language');
         socketRef.current.off('language-change');
-        socketRef.current.off('theme-change');
         socketRef.current.disconnect();
       }
     };
@@ -119,13 +114,7 @@ function Editor() {
   };
   //Description: Code to change the handling of theme
   const handleToggleTheme = () => {
-    if (socketRef.current) {
-      const nextTheme = theme === 'dark' ? 'light' : 'dark';
-      socketRef.current.emit('theme-change', {
-        roomId,
-        theme: nextTheme
-      });
-    }
+    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
   return (
     <div className="container-fluid vh-100">

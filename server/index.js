@@ -16,6 +16,7 @@ const userSocketMap = {};
 const socketRoomMap = {}; // Track which room each socket is in
 const roomCodeMap = {}; // Map to store roomId -> Code
 const roomLanguageMap = {}; // Map to store roomId -> language
+const roomThemeMap = {} // Map for roomId->theme
 
 const getAllConnectedClients = (roomId) => {
   return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
@@ -104,7 +105,7 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('language-change', language);
     // Note: Code persists in roomCodeMap[roomId], no need to reset it
   });
-
+  
   // Description: Code for leaving the room
   socket.on("leave-room", () => {
     const roomId = socketRoomMap[socket.id];
