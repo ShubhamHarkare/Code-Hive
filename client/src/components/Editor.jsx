@@ -3,6 +3,7 @@ import Client from './Client.jsx';
 import Codespace from './Codespace.jsx';
 import initSocket from './Socket.js';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 import {
   useNavigate,
   useLocation,
@@ -19,6 +20,7 @@ function Editor() {
   const { roomId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const backedURL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5555';
   //TODO: The below is used to make sure that I can run the code when I need to run the code
   const onCodeChange = useRef('');
   //Description: Function definition for handling errors
@@ -121,7 +123,21 @@ function Editor() {
 
   //Description: Code to handle changes in the code
   const handleRunCode = async() => {
-    alert(onCodeChange.current);
+    //! This is where I have to write the code to make sure that the code runs
+    try {
+      const response = await axios.post(`${backedURL}/api/execute`,{
+        code: onCodeChange.current,
+        language: programmingLanguage,
+        input: ''
+      });
+      console.log(`Execution Complete: ${response.data}`);
+
+      alert(`Status: ${response.data.status}\nOutput:\n${response.data.output || response.data.error}`);
+    } catch (error) {
+      console.error('Code execution failed', error);
+      toast.error('Failed to run code. Check console for details.');
+    }
+
   };
 
   return (
