@@ -3,8 +3,14 @@ import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
 import { cpp } from '@codemirror/lang-cpp';
 import { javascript } from '@codemirror/lang-javascript';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { githubLight } from '@uiw/codemirror-theme-github';
+
 
 function Codespace({ language, socketRef, roomId, theme }) {
+  const editorTheme = useMemo(() => {
+    return theme === 'dark' ? oneDark : githubLight;
+  },[theme]);
   const isRemoteUpdate = useRef(false);
   const [code, setCode] = useState('');
   const lastEmittedCode = useRef('');
@@ -84,7 +90,7 @@ function Codespace({ language, socketRef, roomId, theme }) {
 
   return (
     <div style={{ padding: '20px', textAlign: 'left' }}>
-      <div style={{ marginBottom: '10px', color: '#888', fontSize: '12px' }}>
+      <div style={{ marginBottom: '10px', color: '#888888ff', fontSize: '12px' }}>
         Debug: Room={roomId}, Language={language}, CodeLength={code.length}
       </div>
       <CodeMirror
@@ -92,7 +98,7 @@ function Codespace({ language, socketRef, roomId, theme }) {
         height="100vh"
         extensions={extensions}
         onChange={handleChange}
-        theme={theme}
+        theme={editorTheme}
         placeholder={getPlaceholder()}
       />
     </div>
