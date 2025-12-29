@@ -4,6 +4,15 @@ const http = require("http");
 const { Server } = require('socket.io');
 const server = http.createServer(app);
 
+
+
+//Middleware required
+app.use(express.json())
+
+//Adding code execuiton here
+const codeExecution = require('./codeExecution.js');
+app.use('/api',codeExecution);
+
 const io = new Server(server, {
   cors: {
     origin: process.env.CORS_ORIGIN || "http://localhost:3000",

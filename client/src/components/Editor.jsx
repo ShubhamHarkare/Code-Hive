@@ -19,6 +19,8 @@ function Editor() {
   const { roomId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  //TODO: The below is used to make sure that I can run the code when I need to run the code
+  const onCodeChange = useRef('');
   //Description: Function definition for handling errors
   const handleError = () => {
     toast.error('Socket Connection Failed');
@@ -116,6 +118,12 @@ function Editor() {
   const handleToggleTheme = () => {
     setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
+
+  //Description: Code to handle changes in the code
+  const handleRunCode = async() => {
+    alert(onCodeChange.current);
+  };
+
   return (
     <div className="container-fluid vh-100">
       <nav className="navbar navbar-dark bg-dark shadow-sm">
@@ -167,6 +175,7 @@ function Editor() {
             <span className="fw-medium small">Change Theme</span>
           </button>
           <button
+            onClick={handleRunCode}
             className="btn btn-warning btn-sm px-4 fw-semibold"
             type="button"
           >
@@ -209,6 +218,9 @@ function Editor() {
               socketRef={socketRef}
               roomId={roomId}
               theme = {theme}
+              onCodeChange = {(code) => {
+                onCodeChange.current = code;
+              }}
             />
           ) : (
             <div style={{ padding: '20px' }}>

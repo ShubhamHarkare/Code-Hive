@@ -7,7 +7,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { githubLight } from '@uiw/codemirror-theme-github';
 
 
-function Codespace({ language, socketRef, roomId, theme }) {
+function Codespace({ language, socketRef, roomId, theme, onCodeChange }) {
   const editorTheme = useMemo(() => {
     return theme === 'dark' ? oneDark : githubLight;
   },[theme]);
@@ -51,6 +51,9 @@ function Codespace({ language, socketRef, roomId, theme }) {
       isRemoteUpdate.current = true;
       setCode(initialCode || '');
       lastEmittedCode.current = initialCode || '';
+      if (onCodeChange) {
+        onCodeChange(initialCode || '');
+      }
     };
 
     const handleCodeChange = (incomingCode) => {
@@ -79,6 +82,9 @@ function Codespace({ language, socketRef, roomId, theme }) {
     }
     setCode(value);
     lastEmittedCode.current = value;
+    if (onCodeChange) {
+      onCodeChange(value);
+    }
 
     if (socketRef?.current) {
       socketRef.current.emit('code-change', {
