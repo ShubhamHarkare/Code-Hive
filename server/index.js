@@ -5,35 +5,51 @@ const { Server } = require('socket.io');
 const server = http.createServer(app);
 const CORS = require('cors');
 
+// CORS configuration - MUST be before any routes
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://code-hive.vercel.app',
+  'https://code-hive-alpha.vercel.app',  // ADD THIS LINE
+  'https://code-hive-qngf6dv0z-shubhamharkares-projects.vercel.app'
+];
 
-//Middleware required
-app.use(express.json())
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('❌ Blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  exposedHeaders: ['Content-Length', 'Content-Type']
+};
+
+app.use(CORS(corsOptions));
+app.use(express.json());
+
+// Handle preflight requests explicitly
+
+
+//Adding code execution here
 const codeExecution = require('./codeExecution.js');
-app.use('/api',codeExecution);
-// Replace the current CORS middleware with:
-app.use(CORS({
-  origin: [
-    process.env.CORS_ORIGIN || "http://localhost:3000",
-    "https://code-hive.vercel.app",
-    "https://code-hive-qngf6dv0z-shubhamharkares-projects.vercel.app"
-  ],
-  methods: ["GET", "POST"],
-  credentials: true
-}));
+app.use('/api', codeExecution);
 
-// Update Socket.IO CORS as well:
 const io = new Server(server, {
   cors: {
-    origin: [
-      process.env.CORS_ORIGIN || "http://localhost:3000",
-      "https://code-hive.vercel.app",
-      "https://code-hive-qngf6dv0z-shubhamharkares-projects.vercel.app"
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true
   }
 });
-const userSocketMap = {};
+
+// Rest of your code...const userSocketMap = {};
 const socketRoomMap = {}; // Track which room each socket is in
 const roomCodeMap = {}; // Map to store roomId -> Code
 const roomLanguageMap = {}; // Map to store roomId -> language
