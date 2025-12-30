@@ -9,7 +9,7 @@ const CORS = require('cors');
 //Middleware required
 app.use(express.json())
 app.use(CORS({
-  origin: "https://your-frontend.vercel.app" || "http://http://localhost:3000",
+  origin: process.env.CORS_ORIGIN || "http://http://localhost:3000",
   methods: ["GET", "POST"]
 }));
 //Adding code execuiton here
