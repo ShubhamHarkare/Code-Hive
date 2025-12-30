@@ -8,6 +8,9 @@ const CORS = require('cors');
 
 //Middleware required
 app.use(express.json())
+const codeExecution = require('./codeExecution.js');
+app.use('/api',codeExecution);
+// Replace the current CORS middleware with:
 app.use(CORS({
   origin: [
     process.env.CORS_ORIGIN || "http://localhost:3000",
@@ -30,7 +33,6 @@ const io = new Server(server, {
     credentials: true
   }
 });
-
 const userSocketMap = {};
 const socketRoomMap = {}; // Track which room each socket is in
 const roomCodeMap = {}; // Map to store roomId -> Code
