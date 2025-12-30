@@ -9,16 +9,23 @@ const CORS = require('cors');
 //Middleware required
 app.use(express.json())
 app.use(CORS({
-  origin: process.env.CORS_ORIGIN || "http://http://localhost:3000",
-  methods: ["GET", "POST"]
+  origin: [
+    process.env.CORS_ORIGIN || "http://localhost:3000",
+    "https://code-hive.vercel.app",
+    "https://code-hive-qngf6dv0z-shubhamharkares-projects.vercel.app"
+  ],
+  methods: ["GET", "POST"],
+  credentials: true
 }));
-//Adding code execuiton here
-const codeExecution = require('./codeExecution.js');
-app.use('/api',codeExecution);
 
+// Update Socket.IO CORS as well:
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: [
+      process.env.CORS_ORIGIN || "http://localhost:3000",
+      "https://code-hive.vercel.app",
+      "https://code-hive-qngf6dv0z-shubhamharkares-projects.vercel.app"
+    ],
     methods: ["GET", "POST"],
     credentials: true
   }
