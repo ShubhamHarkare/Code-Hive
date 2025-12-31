@@ -4,6 +4,7 @@ import { Route, Routes } from 'react-router-dom';
 import HomePage from './components/HomePage.jsx';
 import Editor from './components/Editor.jsx';
 import { Toaster } from 'react-hot-toast';
+import React from 'react';
 
 function App() {
   return (

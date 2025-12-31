@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node -r dotenv/config index.js dotenv_config_path=.env.production",
+    "dev": "nodemon -r dotenv/config index.js dotenv_config_path=.env.development",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -22,6 +22,7 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^5.2.1",
     "socket.io": "^4.8.3"
   },

@@ -35,6 +35,12 @@ jobs:
         run: npm install
         working-directory: ./client
 
+      - name: Run Tests
+        run: npm test -- --watchAll=false
+        working-directory: ./client
+        env:
+          CI: true  # ensures Jest exits after running tests
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
