@@ -24,3 +24,12 @@ yarn-error.log*
 .idea/
 *.swp
 *.swo
+# macOS
+.DS_Store
+
+# Real env files (keep only examples)
+.env.*
+!.env.example
+
+# Local notes
+roadmap.pdf
