@@ -1,0 +1,7 @@
+{"clients":10,"connected":10,"expected":450,"measured":450,"p50":58,"p95":71,"p99":91,"max":155,"mean":60}
+{"clients":25,"connected":25,"expected":1200,"measured":1200,"p50":57,"p95":80,"p99":186,"max":196,"mean":60.9}
+{"clients":50,"connected":50,"expected":2450,"measured":2450,"p50":57,"p95":104,"p99":202,"max":1483,"mean":67.6}
+{"clients":100,"connected":100,"expected":4950,"measured":4950,"p50":57,"p95":73,"p99":82,"max":85,"mean":59.1}
+{"clients":200,"connected":200,"expected":9950,"measured":9950,"p50":62,"p95":92,"p99":192,"max":2303,"mean":73.6}
+{"clients":400,"connected":400,"expected":19950,"measured":18865,"p50":1603,"p95":4656,"p99":5554,"max":7486,"mean":2043.5}
+{"clients":300,"connected":300,"expected":14950,"measured":12634,"p50":2300,"p95":5143,"p99":6676,"max":7996,"mean":2421.2}
